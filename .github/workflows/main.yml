@@ -1,0 +1,25 @@
+name: Unzip File
+
+on:
+  push:
+    paths:
+      - "*.zip"  # Trigger when a ZIP file is pushed
+
+jobs:
+  unzip:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Unzip File
+        run: unzip -o your_large_file.zip -d unzipped_files/
+
+      - name: Commit Unzipped Files
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git add unzipped_files/
+          git commit -m "Unzipped file"
+          git push
