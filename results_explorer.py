@@ -42,7 +42,7 @@ def load_data():
     results_with_context = results_with_context[~(results_with_context["entity"]== "fane")]
     results_with_context['model'] = results_with_context['model'].str.replace(r".+/", "", regex=True)
     
-    pll_simple_results = pd.read_csv("results_pll_simple_six_models.csv")
+    pll_simple_results = pd.read_csv("../pll_analysis/results_pll_simple_six_models.csv")
     
     
 
@@ -278,7 +278,7 @@ def model_comparison():
 
 
 def pll_syntax():
-    st.title(f"Results PLL Simple Complement Coercion Norwegian")
+    st.title(f"Results Simple PLL  Complement Coercion Norwegian")
     
     st.header("Results Updated 04/02/2025")
     
@@ -298,6 +298,16 @@ def pll_syntax():
     
     df_pll_simple = dataframes['PLL_Syntax']
     df_pll_simple
+    
+    st.subheader("Global PLL Results based on Model")
+
+    global_results = df_pll_simple.groupby("verb", as_index=False).agg({'pll_på':'mean', 'pll_med':'mean', 'pll_null':'mean' })
+    st.dataframe(global_results)
+
+    global_results  =global_results.set_index(global_results["verb"]).drop(columns=(["verb"]))
+
+    grouped_bar_chart(global_results, global_results.index, f'Global PLL Results across Models based on Verbs')
+
     
     list_models = list(df_pll_simple['model'].unique()) + ['ALL']
     list_cat = ['verb', 'entity_cat', 'entity']
