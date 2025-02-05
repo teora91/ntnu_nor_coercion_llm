@@ -3,7 +3,7 @@ name: Unzip File
 on:
   push:
     paths:
-      - "*.zip"  # Trigger when a ZIP file is pushed
+      - "*.zip"  # Runs when a ZIP file is pushed
 
 jobs:
   unzip:
