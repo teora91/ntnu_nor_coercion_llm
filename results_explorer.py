@@ -219,8 +219,6 @@ def model_comparison():
     st.title(f"Results Model Comparison between LLMs in Complement Coercion in Norwegian")
     
     st.header("Results Updated 02/02/2025")
-    st.write("Debug: Dataframes Dictionary", dataframes)
-
     df_no_context = dataframes['Model Comparison'][0]
     df_with_context = dataframes['Model Comparison'][1]
     
