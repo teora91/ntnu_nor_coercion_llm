@@ -61,7 +61,7 @@ dataframes = load_data()
 def top_five(selected_df_type):
 
     # **Select which DataFrame to view**
-    selected_df_name = st.sidebar.selectbox("Select a DataFrame:", list(dataframes.keys())[:-1])
+    selected_df_name = st.sidebar.selectbox("Select a DataFrame:", list(dataframes.keys())[:-2])
     dict_results_dataframe = {'Results NO context': "No Context", "Results WITH context": "With Context"}
     
     st.title(f"Results Complement Coercion Norwegian {dict_results_dataframe[selected_df_name]}, {selected_df_type}")
@@ -148,7 +148,7 @@ def top_five(selected_df_type):
     
     
 def one_shot(selected_df_type):
-    selected_df_name = st.sidebar.selectbox("Select a DataFrame:", list(dataframes.keys())[:-1])
+    selected_df_name = st.sidebar.selectbox("Select a DataFrame:", list(dataframes.keys())[:-2])
     
     dict_results_dataframe = {'Results NO context': "No Context", "Results WITH context": "With Context"}
     
