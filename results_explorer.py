@@ -26,8 +26,14 @@ def load_data():
     results_no_context = results_no_context[~(results_no_context["entity"]== "bolle")]
     results_no_context = results_no_context[~(results_no_context["entity"]== "fane")]
     results_no_context['model'] = results_no_context['model'].str.replace(r".+/", "", regex=True)
+    
 
-    results_with_context = pd.read_csv("results_with_acc_NEW_with_ALLMODELS_updated_02-02-25_with_contex_TRUE.csv")
+    df1 = pd.read_csv("dataset_part1.csv")
+    df2 = pd.read_csv("dataset_part2.csv")
+
+    # Reunite them
+    results_with_context = pd.concat([df1, df2], ignore_index=True)
+
     results_with_context = results_with_context.fillna("0")
     results_with_context["predicted_events"] = results_with_context["predicted_events"].apply(ast.literal_eval)
     results_with_context["total_score_list"] = results_with_context["total_score_list"].apply(ast.literal_eval)
