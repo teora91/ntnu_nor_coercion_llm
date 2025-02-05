@@ -1,9 +1,9 @@
-name: Unzip File
+name: Unzip File on Push
 
 on:
   push:
     paths:
-      - "*.zip"  # Runs when a ZIP file is pushed
+      - "*.zip"  # Runs only if a ZIP file is pushed
 
 jobs:
   unzip:
@@ -13,13 +13,22 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
+      - name: List Repository Files (Debugging)
+        run: ls -lah
+
+      - name: Install Unzip (if not installed)
+        run: sudo apt-get install unzip -y
+
       - name: Unzip File
         run: unzip -o your_large_file.zip -d unzipped_files/
 
-      - name: Commit Unzipped Files
+      - name: Verify Unzipped Files (Debugging)
+        run: ls -lah unzipped_files/
+
+      - name: Commit and Push Extracted Files
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
           git add unzipped_files/
-          git commit -m "Unzipped file"
+          git commit -m "Unzipped files"
           git push
