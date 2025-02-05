@@ -2,9 +2,11 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import ast
+import emoji
 from utils import *
 import matplotlib.pyplot as plt
 import seaborn as sns
+import re
 
 
 # Function to load multiple DataFrames
@@ -40,8 +42,14 @@ def load_data():
     results_with_context = results_with_context[~(results_with_context["entity"]== "bolle")]
     results_with_context = results_with_context[~(results_with_context["entity"]== "fane")]
     results_with_context['model'] = results_with_context['model'].str.replace(r".+/", "", regex=True)
+    
+    pll_simple_results = pd.read_csv("../pll_analysis/results_pll_simple_six_models.csv")
+    
+    
 
-    return {"Results NO context": results_no_context, "Results WITH context":results_with_context}
+    
+
+    return {"Results NO context": results_no_context, "Results WITH context":results_with_context, "Model Comparison": [results_no_context, results_with_context], "PLL_Syntax": pll_simple_results}
 
 
 
@@ -54,8 +62,8 @@ dataframes = load_data()
 def top_five(selected_df_type):
 
     # **Select which DataFrame to view**
-    selected_df_name = st.sidebar.selectbox("Select a DataFrame:", list(dataframes.keys()))
-    dict_results_dataframe = {'Results NO context': "No Context", "Results NO context": "With Context"}
+    selected_df_name = st.sidebar.selectbox("Select a DataFrame:", list(dataframes.keys())[:-1])
+    dict_results_dataframe = {'Results NO context': "No Context", "Results WITH context": "With Context"}
     
     st.title(f"Results Complement Coercion Norwegian {dict_results_dataframe[selected_df_name]}, {selected_df_type}")
     
@@ -141,9 +149,9 @@ def top_five(selected_df_type):
     
     
 def one_shot(selected_df_type):
-    selected_df_name = st.sidebar.selectbox("Select a DataFrame:", list(dataframes.keys()))
+    selected_df_name = st.sidebar.selectbox("Select a DataFrame:", list(dataframes.keys())[:-1])
     
-    dict_results_dataframe = {'Results NO context': "No Context", "Results NO context": "With Context"}
+    dict_results_dataframe = {'Results NO context': "No Context", "Results WITH context": "With Context"}
     
     st.title(f"Results Complement Coercion Norwegian {dict_results_dataframe[selected_df_name]}, {selected_df_type}")
     st.header("Results Updated 02/02/2025")
@@ -170,11 +178,11 @@ def one_shot(selected_df_type):
     df_one_shot['results_one_shot_accomplishment'] = df_one_shot['lexical aspect'].apply(calc_one_shot_hard)
     
     
-    results1 = df_one_shot.groupby('model', as_index=False)['results_one_shot_accomplishment'].mean().style.apply(highlight_max, subset="results_one_shot_accomplishment")
+    results_1 = df_one_shot.groupby('model', as_index=False)['results_one_shot_accomplishment'].mean().style.apply(highlight_max, subset="results_one_shot_accomplishment")
     
     df_one_shot
     
-    st.dataframe(results1)
+    st.dataframe(results_1)
     
     df_2_one_shot = df_one_shot[df_one_shot["model"]!= 'NCC']
     df_2_one_shot = df_2_one_shot[df_2_one_shot["model"]!= 'nb-gpt-j-6B']
@@ -208,9 +216,114 @@ def one_shot(selected_df_type):
     st.dataframe(filtered_best1)
 
     
+def model_comparison():
+    st.title(f"Results Model Comparison between LLMs in Complement Coercion in Norwegian")
+    
+    st.header("Results Updated 02/02/2025")
+    df_no_context = dataframes['Model Comparison'][0]
+    df_with_context = dataframes['Model Comparison'][1]
+    
+
+    df_no_context['avg_precision'] = df_no_context['total_score_list'].apply(precision_calculation)
+
+    df_no_context['hard_rank_mean'] = df_no_context['total_score_list'].apply(hard_rank_mean)
+    df_no_context["DIFF_hard_rank_mean"] = df_no_context['hard_rank_mean'] - max_score #RCS discance
+
+    df_no_context['soft_rank_mean'] = df_no_context['total_score_list'].apply(soft_rank_mean)
+    df_no_context["DIFF_soft_rank_mean"] = df_no_context['soft_rank_mean'] - max_score #RCS discance
 
 
 
+    df_with_context['avg_precision'] = df_with_context['total_score_list'].apply(precision_calculation)
+
+    df_with_context['hard_rank_mean'] = df_with_context['total_score_list'].apply(hard_rank_mean)
+    df_with_context["DIFF_hard_rank_mean"] = df_with_context['hard_rank_mean'] - max_score #RCS discance
+
+    df_with_context['soft_rank_mean'] = df_with_context['total_score_list'].apply(soft_rank_mean)
+    df_with_context["DIFF_soft_rank_mean"] = df_with_context['soft_rank_mean'] - max_score #RCS discance
+    
+    
+    x_1_no_context = df_no_context.groupby('model', as_index=False).agg(calculations)
+    # x_1_no_context_ = x_1_no_context.style.apply(highlight_max, subset=style_apply_subset)
+    # st.dataframe(x_1_no_context_)
+
+    x_1_with_context = df_with_context.groupby('model', as_index=False).agg(calculations)
+    # x_1_with_context_ = x_1_with_context.style.apply(highlight_max, subset=style_apply_subset)
+    # st.dataframe(x_1_with_context_)
+    
+    x_1_no_context_ = x_1_no_context.rename(columns={'avg_precision':'avg_precision_no_context' ,'hard_rank_mean':'hard_rank_mean_no_context' ,'DIFF_hard_rank_mean':'DIFF_hard_rank_mean_no_context' ,'soft_rank_mean':'soft_rank_mean_no_context' ,'DIFF_soft_rank_mean':'DIFF_soft_rank_mean_no_context'})
+    x_1_with_context_ = x_1_with_context.rename(columns={'avg_precision':'avg_precision_with_context' ,'hard_rank_mean':'hard_rank_mean_with_context' ,'DIFF_hard_rank_mean':'DIFF_hard_rank_mean_with_context' ,'soft_rank_mean':'soft_rank_mean_with_context' ,'DIFF_soft_rank_mean':'DIFF_soft_rank_mean_with_context'})
+    x_1_with_context_ = x_1_with_context_.drop(columns=(["model"]))
+    
+    concat_performance_models = pd.concat([x_1_no_context_, x_1_with_context_], axis=1)
+    concat_performance_models
+    pattern1 = r"model|avg_precision_"
+    pattern2 = r"model|hard_rank_mean_"
+    pattern3 = r"model|soft_rank_mean_"
+
+    avg_precision = difference_context_vs_no_context(concat_performance_models, pattern1)
+    st.dataframe(avg_precision)
+    
+    plotting_resutls_comparison(avg_precision, 'avg_precision_no_context', 'avg_precision_with_context', 'Avg Precision')
+
+
+    hard_rank_mean_ = difference_context_vs_no_context(concat_performance_models, pattern2)
+    st.dataframe(hard_rank_mean_)
+    
+    plotting_resutls_comparison(hard_rank_mean_, 'hard_rank_mean_no_context', 'hard_rank_mean_with_context', 'Hard rank mean')
+    
+    soft_rank_mean_ = difference_context_vs_no_context(concat_performance_models, pattern3)
+    soft_rank_mean_
+    
+    plotting_resutls_comparison(soft_rank_mean_, 'soft_rank_mean_no_context', 'soft_rank_mean_with_context', 'Soft rank mean')
+
+
+def pll_syntax():
+    st.title(f"Results PLL Simple Complement Coercion Norwegian")
+    
+    st.header("Results Updated 04/02/2025")
+    
+    
+    st.text("Pseudo-Log likelihood (PLL) of the whole simple coercion sentence SUB+VERB+[PP|NP]")
+
+    st.latex(r'''
+    PLL_{\text{orig}}(S) := \sum_{t=1}^{n} \log P_{\text{MLM}}(s_t | S_{\setminus t})
+    ''')
+    
+    st.markdown("Adaptation of PLL bassed on [Kauf and Ivanova 2023](https://arxiv.org/pdf/2305.10588) for MLM models")
+
+    
+    st.latex(r'''
+        PLL_{\text{ww}}(S) := \sum_{w=1}^{|S|} \sum_{t=1}^{|w|} \log P_{\text{MLM}}(s_{w,t} | S_{\setminus s_w}) ''')
+
+    
+    df_pll_simple = dataframes['PLL_Syntax']
+    df_pll_simple
+    
+    list_models = list(df_pll_simple['model'].unique()) + ['ALL']
+    list_cat = ['verb', 'entity_cat', 'entity']
+    selected_model = st.sidebar.selectbox("Select a Model:",list_models )
+    selected_cat = st.sidebar.selectbox("Select a Category:",list_cat )
+    # dict_results_dataframe = {'Results NO context': "No Context", "Results WITH context": "With Context"}
+
+    if selected_model == "ALL":
+        for v in df_pll_simple['model'].unique():
+            st.subheader(f"Resutls from {v}")
+            filter_ = df_pll_simple[df_pll_simple['model']==v]
+            filter_ = filter_.groupby(selected_cat, as_index=False).agg({'pll_på':'mean', 'pll_med':'mean', 'pll_null':'mean' })
+            filter_  =filter_.set_index(filter_[selected_cat]).drop(columns=([selected_cat]))
+
+            grouped_bar_chart(filter_, filter_.index, f'PLL Results of all Models based on {selected_cat}')
+
+            print("\n\n\n\n")
+    else:
+        st.subheader(f"Resutls from {selected_model} based on {selected_cat}")
+
+        results_pll_verbs = df_pll_simple[df_pll_simple['model']==selected_model].groupby(selected_cat, as_index=False).agg({'pll_på':'mean', 'pll_med':'mean', 'pll_null':'mean' })
+        results_pll_verbs  =results_pll_verbs.set_index(results_pll_verbs[selected_cat]).drop(columns=([selected_cat]))
+
+        grouped_bar_chart(results_pll_verbs, results_pll_verbs.index, selected_cat)
+        results_pll_verbs
 
 
     
@@ -218,12 +331,16 @@ def one_shot(selected_df_type):
     
     
     
-selected_df_type = st.sidebar.selectbox("Top-5 vs One-Hot:",["Top-5", "One-Shot"])
+selected_df_type = st.sidebar.selectbox("What analyze?:",["Top-5", "One-Shot", "Model Comparison", "PLL_Syntax"])
 if selected_df_type == 'Top-5':
         top_five(selected_df_type)
 elif selected_df_type == 'One-Shot':
         one_shot(selected_df_type)
-        
+elif selected_df_type == 'Model Comparison':
+        model_comparison()
+elif selected_df_type == 'PLL_Syntax':
+        pll_syntax()
+
         
 
 
