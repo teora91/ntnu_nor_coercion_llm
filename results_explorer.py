@@ -42,7 +42,7 @@ def load_data():
     results_with_context = results_with_context[~(results_with_context["entity"]== "fane")]
     results_with_context['model'] = results_with_context['model'].str.replace(r".+/", "", regex=True)
     
-    pll_simple_results = pd.read_csv("pll_analysis/results_pll_simple_six_models.csv")
+    pll_simple_results = pd.read_csv("results_pll_simple_six_models.csv")
     
     
 
