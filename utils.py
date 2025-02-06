@@ -5,10 +5,12 @@ import seaborn as sns
 
 def min_max_score_hard_soft():
     max_score, min_score = 0,0
-    for i in range(1, 11):
+    for i in range(1, 6):
         max_score+= 1/i
+    max_score = max_score/5
 
-    for i in range(1, 11):
+
+    for i in range(1, 6):
         min_score+= 0/i
     return max_score, min_score
 
@@ -38,7 +40,7 @@ def hard_rank_mean(scores):
             rank_mean.append(0)
         else:
             rank_mean.append(1/ idx)
-    rank_mean = np.array(rank_mean).sum()
+    rank_mean = (np.array(rank_mean).sum())/ 5
     return rank_mean
 
 def soft_rank_mean(scores):
@@ -50,7 +52,7 @@ def soft_rank_mean(scores):
             rank_mean.append(0)
         else:
             rank_mean.append(1/ idx)
-    rank_mean = np.array(rank_mean).sum()
+    rank_mean = np.array(rank_mean).sum()/5
     return rank_mean
 
 
