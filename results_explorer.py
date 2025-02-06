@@ -8,6 +8,29 @@ import seaborn as sns
 import re
 
 
+
+# Define the current app version (change this when updating the script)
+CURRENT_VERSION = "2.0.0"  # 🔄 Change this whenever you update the app
+# Check if session state has stored the version
+if "last_version_seen" not in st.session_state:
+    st.session_state.last_version_seen = None
+
+# If the version is new, show the popup
+if st.session_state.last_version_seen != CURRENT_VERSION:
+    with st.expander(f"🚀 New Update Available! (v{CURRENT_VERSION}, 06/02/2024 - CEST 06:02)", expanded=True):
+        st.write("""
+        - **New Results added**: *PLL_Syntax_Simple*. Comparison of different LLMs on simple sentences with no context through calculation of Pseudo-log likelihood. Check on the **side bar**  
+        - **Bug Fixes**: Faster performance  
+        """)
+        if st.button("Got it!"):
+            st.session_state.last_version_seen = CURRENT_VERSION  # Store the new version in session state
+
+st.title("Welcome to My Streamlit App")
+st.write("Explore the latest updates and features!")
+
+
+
+
 # Function to load multiple DataFrames
 max_score, min_score = min_max_score()
 
@@ -48,7 +71,7 @@ def load_data():
 
     
 
-    return {"Results NO context": results_no_context, "Results WITH context":results_with_context, "Model Comparison": [results_no_context, results_with_context], "PLL_Syntax": pll_simple_results}
+    return {"Results NO context": results_no_context, "Results WITH context":results_with_context, "Model Comparison": [results_no_context, results_with_context], "PLL_Syntax_Simple": pll_simple_results}
 
 
 
@@ -321,7 +344,7 @@ def pll_syntax():
         PLL_{\text{ww}}(S) := \sum_{w=1}^{|S|} \sum_{t=1}^{|w|} \log P_{\text{MLM}}(s_{w,t} | S_{\setminus s_w}) ''')
 
     
-    df_pll_simple = dataframes['PLL_Syntax']
+    df_pll_simple = dataframes['PLL_Syntax_Simple']
     df_pll_simple
     
     st.subheader("Global PLL Results based on Model")
@@ -365,14 +388,14 @@ def pll_syntax():
     
     
     
-selected_df_type = st.sidebar.selectbox("What analyze?:",["Top-5", "One-Shot", "Model Comparison", "PLL_Syntax"])
+selected_df_type = st.sidebar.selectbox("What analyze?:",["Top-5", "One-Shot", "Model Comparison", "PLL_Syntax_Simple"])
 if selected_df_type == 'Top-5':
         top_five(selected_df_type)
 elif selected_df_type == 'One-Shot':
         one_shot(selected_df_type)
 elif selected_df_type == 'Model Comparison':
         model_comparison()
-elif selected_df_type == 'PLL_Syntax':
+elif selected_df_type == 'PLL_Syntax_Simple':
         pll_syntax()
 
         
