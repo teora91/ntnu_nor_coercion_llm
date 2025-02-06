@@ -42,7 +42,7 @@ def load_data():
     results_with_context = results_with_context[~(results_with_context["entity"]== "fane")]
     results_with_context['model'] = results_with_context['model'].str.replace(r".+/", "", regex=True)
     
-    pll_simple_results = pd.read_csv("results_pll_simple_six_models.csv")
+    pll_simple_results = pd.read_csv("../pll_analysis/results_pll_simple_six_models.csv")
     
     
 
@@ -67,6 +67,31 @@ def top_five(selected_df_type):
     st.title(f"Results Complement Coercion Norwegian {dict_results_dataframe[selected_df_name]}, {selected_df_type}")
     
     st.header("Results Updated 02/02/2025")
+    
+    
+    st.subheader("Average Precision")
+
+    st.latex(r"""
+    \text{Precision}_{m,s} = \frac{|P_{m,s} \cap A|}{5}
+    """)
+
+    st.latex(r"""
+    \text{AvgPrecision}_m = \frac{1}{|S|} \sum_{s \in S} \text{Precision}_{m,s}
+    """)
+
+    st.write("""
+    where:
+    - $M$ = set of evaluated models.
+    - $S$ = set of sentences.
+    - $P_{m,s}$ = the top-5 predicted lexical aspects/aktionsart for a model $m$ and sentence $s$.
+    - $A$ = set of accomplishment verbs.
+    - $P_{m,s} \cap A$ = set of valid accomplishment verb predictions.
+    """)
+
+
+
+    
+    
 
 
     # Get the selected DataFrame
