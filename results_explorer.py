@@ -25,8 +25,7 @@ if st.session_state.last_version_seen != CURRENT_VERSION:
         if st.button("Got it!"):
             st.session_state.last_version_seen = CURRENT_VERSION  # Store the new version in session state
 
-st.title("Welcome to My Streamlit App")
-st.write("Explore the latest updates and features!")
+st.title("Complement Coercion Results Explorer")
 
 
 
