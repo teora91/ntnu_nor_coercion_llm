@@ -10,7 +10,7 @@ import re
 
 
 # Define the current app version (change this when updating the script)
-CURRENT_VERSION = "2.0.0"  # 🔄 Change this whenever you update the app
+CURRENT_VERSION = "2.0.0" 
 # Check if session state has stored the version
 if "last_version_seen" not in st.session_state:
     st.session_state.last_version_seen = None
